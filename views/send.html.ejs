@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<title> </title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
+
+<style>
+  body, html {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .grid {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: repeat(<%= columns %> , 1fr);
+    grid-template-rows: repeat(<%= rows %>, 1fr);
+  }
+  .grid button {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<body class="bg-black sans-serif">
+  <div class="grid tc" >
+    <% sounds.forEach(function(sound) { %>
+      <a class="f6 link dim br4 ma1 dib white bg-dark-gray pointer inline-flex items-center justify-center" onclick="sendSound('<%= sound.url %>')">
+        <%= sound.name %>
+      </a>
+    <% }) %>
+  </div>
+
+  <script>
+    function sendSound(sound) {
+      fetch('/play', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8'
+        },
+        body: JSON.stringify({sound: sound})
+      });
+    }
+
+  </script>
+</body>
+
+</html>

@@ -5,20 +5,23 @@
 <link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
 
 <style>
-  body, html {
+  body,
+  html {
     height: 100%;
     margin: 0;
     display: flex;
     align-items: center;
     justify-content: center;
   }
+
   .grid {
     width: 100vw;
     height: 100vh;
     display: grid;
-    grid-template-columns: repeat(<%= columns %> , 1fr);
-    grid-template-rows: repeat(<%= rows %>, 1fr);
+    grid-template-columns: repeat(<%=columns %>, 1fr);
+    grid-template-rows: repeat(<%=rows %>, 1fr);
   }
+
   .grid button {
     width: 100%;
     height: 100%;
@@ -26,15 +29,34 @@
 </style>
 
 <body>
-  <div class="grid">
+  <button id="startButton" class="w-100 h-100" onclick="start()">
+    Start
+  </button>
+
+  <div class="grid" style="display: none;">
     <% sounds.forEach(function(sound) { %>
       <button class="w-100 h-100" onclick="playSound('<%= sound.url %>')">
         <%= sound.name %>
       </button>
-    <% }) %>
+      <% }) %>
   </div>
 
   <script>
+
+    function start() {
+      document.getElementById('startButton').style.display = 'none';
+      document.querySelector('.grid').style.display = 'grid';
+
+      var eventSource = new EventSource('/listen');
+
+      eventSource.onmessage = function (event) {
+        console.log(event.data);
+        var sound = JSON.parse(event.data);
+        console.log({sound})
+        playSound(sound);
+      }
+    }
+
     function playSound(sound) {
       var audio = new Audio(sound);
       audio.play();
