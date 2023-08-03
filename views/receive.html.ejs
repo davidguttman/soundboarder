@@ -14,7 +14,8 @@
     justify-content: center;
   }
 
-  .grid {
+  .grid,
+  .grid-start {
     width: 100vw;
     height: 100vh;
     display: grid;
@@ -22,29 +23,39 @@
     grid-template-rows: repeat(<%=rows %>, 1fr);
   }
 
-  .grid button {
+  .grid-start {
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: repeat(1, 1fr);
+  }
+
+  .grid button,
+  .grid-start button {
     width: 100%;
     height: 100%;
   }
 </style>
 
-<body>
-  <button id="startButton" class="w-100 h-100" onclick="start()">
-    Start
-  </button>
+<body class="bg-black sans-serif">
+  <div class="grid-start">
+    <a class="f1 link dim br4 ma1 dib white bg-dark-gray pointer inline-flex items-center justify-center pointer"
+      onclick="start()">
+      Start
+    </a>
+  </div>
 
-  <div class="grid" style="display: none;">
+  <div class="grid tc" style="display: none;">
     <% sounds.forEach(function(sound) { %>
-      <button class="w-100 h-100" onclick="playSound('<%= sound.url %>')">
+      <a class="f6 link dim br4 ma1 dib white bg-dark-gray pointer inline-flex items-center justify-center pointer"
+        onclick="playSound('<%= sound.url %>')">
         <%= sound.name %>
-      </button>
+      </a>
       <% }) %>
   </div>
 
   <script>
 
     function start() {
-      document.getElementById('startButton').style.display = 'none';
+      document.querySelector('.grid-start').style.display = 'none';
       document.querySelector('.grid').style.display = 'grid';
 
       var eventSource = new EventSource('/listen');
@@ -52,7 +63,7 @@
       eventSource.onmessage = function (event) {
         console.log(event.data);
         var sound = JSON.parse(event.data);
-        console.log({sound})
+        console.log({ sound })
         playSound(sound);
       }
     }

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<title> </title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
+
+<style>
+  body, html {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .grid {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+  .grid button {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<body class="bg-black sans-serif">
+  <div class="grid tc" >
+    <a class="f3 link dim br4 ma1 dib white bg-dark-gray pointer inline-flex items-center justify-center" href="/receive">
+      Receive
+    </a>
+
+    <a class="f3 link dim br4 ma1 dib white bg-dark-gray pointer inline-flex items-center justify-center" href="/send">
+      Send
+    </a>
+  </div>
+</body>
+
+</html>
