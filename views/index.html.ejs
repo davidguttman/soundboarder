@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<title> </title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
+
+<style>
+  body, html {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .grid {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+  }
+  .grid button {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<body>
+  <div class="grid">
+    <% sounds.forEach(function(sound) { %>
+      <button class="w-100 h-100" onclick="playSound('<%= sound.url %>')">
+        <%= sound.name %>
+      </button>
+    <% }) %>
+  </div>
+
+  <script>
+    function playSound(sound) {
+      var audio = new Audio(sound);
+      audio.play();
+    }
+  </script>
+</body>
+
+</html>
