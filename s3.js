@@ -100,7 +100,7 @@ function getFileUrl (client, file, cb) {
 
 function getDirTime (client, prefix, cb) {
   let done = false
-  s3List(client, { prefix: prefix }, 1)
+  s3List(client, { prefix }, 1)
     .on('data', file => {
       if (done) return
       done = true
