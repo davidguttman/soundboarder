@@ -43,20 +43,23 @@
     </a>
   </div>
 
-  <div class="grid tc" style="display: none;">
-    <% sounds.forEach(function(sound) { %>
-      <a class="f6 link dim br4 ma1 dib white bg-dark-gray pointer inline-flex items-center justify-center pointer"
-        onclick="playSound('<%= sound.url %>')">
-        <%= sound.name %>
-      </a>
+  <div class="sounds dn">
+    <div class="tc flex flex-wrap w-100">
+      <% sounds.forEach(function(sound) { %>
+        <div class="w-25 h3 pa1">
+          <a class="w-100 h-100 f6 link dim br4 ma1 dib white bg-dark-gray pointer inline-flex items-center justify-center" onclick="playSound('<%= sound.url %>')">
+            <%= sound.name %>
+          </a>
+        </div>
       <% }) %>
+    </div>
   </div>
 
   <script>
 
     function start() {
       document.querySelector('.grid-start').style.display = 'none';
-      document.querySelector('.grid').style.display = 'grid';
+      document.querySelector('.sounds').classList.remove('dn')
 
       var eventSource = new EventSource('/listen');
 
