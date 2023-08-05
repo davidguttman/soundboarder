@@ -9,6 +9,7 @@
   "author": "David Guttman <david@guttman.io> (http://davidguttman.com/)",
   "license": "MIT",
   "dependencies": {
+    "async": "^3.2.4",
     "async-cache": "^1.1.0",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",

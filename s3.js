@@ -1,5 +1,6 @@
 const knox = require('knox')
 const xtend = require('xtend')
+const async = require('async')
 const through2 = require('through2')
 
 const cache = require('./cache')
@@ -19,12 +20,22 @@ function createClient (config) {
       dir = dir.replace(/^\//, '')
       const opts = { prefix: dir, delimiter: '/' }
 
-      const tr = through2.obj((item, enc, cb) => {
+      const buf = []
+      s3List(client, opts)
+        .on('error', cb || (() => {}))
+        .on('data', item => buf.push(item))
+        .on('end', onEnd)
+
+      function onEnd () {
+        async.mapLimit(buf, 8, getCache, cb)
+      }
+
+      function getCache (item, cb) {
         if (item.Prefix) {
           dirCache(item.Prefix, (err, time) => {
             if (err) return cb(err)
             item.LastModified = time
-            return cb(null, item)
+            cb(null, item)
           })
         } else {
           urlCache(item.Key, (err, url) => {
@@ -33,18 +44,7 @@ function createClient (config) {
             cb(null, item)
           })
         }
-      })
-
-      const buf = []
-      return s3List(client, opts)
-        .pipe(tr)
-        .on('data', (item) => {
-          if (cb) buf.push(item)
-        })
-        .on('end', () => {
-          if (cb) cb(null, buf)
-        })
-        .on('error', cb || (() => {}))
+      }
     }
   }
 }
@@ -68,11 +68,11 @@ function list (client, opts, stream, max) {
     data.CommonPrefixes = data.CommonPrefixes || []
 
     let lastKey
-    data.Contents.forEach((file) => {
+    data.Contents.forEach(file => {
       lastKey = file.Key
       stream.write(file)
     })
-    data.CommonPrefixes.forEach((dir) => {
+    data.CommonPrefixes.forEach(dir => {
       stream.write(dir)
     })
 
@@ -90,7 +90,7 @@ function getFileUrl (client, file, cb) {
     'x-amz-acl': 'public-read'
   })
 
-  req.on('response', (res) => {
+  req.on('response', res => {
     if (res.statusCode >= 400) return cb(res.body)
     cb(null, client.http(file))
   })
@@ -101,7 +101,7 @@ function getFileUrl (client, file, cb) {
 function getDirTime (client, prefix, cb) {
   let done = false
   s3List(client, { prefix: prefix }, 1)
-    .on('data', (file) => {
+    .on('data', file => {
       if (done) return
       done = true
       cb(null, file.LastModified)
