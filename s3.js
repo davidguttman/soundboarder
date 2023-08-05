@@ -15,35 +15,54 @@ function createClient (config) {
   const urlCache = cache((file, cb) => getFileUrl(client, file, cb))
 
   return {
-    list: (dir, cb) => {
-      if (dir[dir.length - 1] !== '/') dir += '/'
-      dir = dir.replace(/^\//, '')
-      const opts = { prefix: dir, delimiter: '/' }
+    put,
+    list: listWithCache
+  }
 
-      const buf = []
-      s3List(client, opts)
-        .on('error', cb || (() => {}))
-        .on('data', item => buf.push(item))
-        .on('end', onEnd)
+  function put (file, key, cb) {
+    console.log(file)
+    const req = client.put(key, {
+      'Content-Length': file.size,
+      'Content-Type': file.mimetype,
+      'x-amz-acl': 'public-read'
+    })
+    req.on('error', cb)
+    req.on('response', res => {
+      if (res.statusCode >= 400) return cb(res.body)
+      cb(null, res.req.url)
+    })
 
-      function onEnd () {
-        async.mapLimit(buf, 8, getCache, cb)
-      }
+    req.end(file.buffer)
+  }
 
-      function getCache (item, cb) {
-        if (item.Prefix) {
-          dirCache(item.Prefix, (err, time) => {
-            if (err) return cb(err)
-            item.LastModified = time
-            cb(null, item)
-          })
-        } else {
-          urlCache(item.Key, (err, url) => {
-            if (err) return cb(err)
-            item.url = url
-            cb(null, item)
-          })
-        }
+  function listWithCache (dir, cb) {
+    if (dir[dir.length - 1] !== '/') dir += '/'
+    dir = dir.replace(/^\//, '')
+    const opts = { prefix: dir, delimiter: '/' }
+
+    const buf = []
+    s3List(client, opts)
+      .on('error', cb || (() => {}))
+      .on('data', item => buf.push(item))
+      .on('end', onEnd)
+
+    function onEnd () {
+      async.mapLimit(buf, 8, getCache, cb)
+    }
+
+    function getCache (item, cb) {
+      if (item.Prefix) {
+        dirCache(item.Prefix, (err, time) => {
+          if (err) return cb(err)
+          item.LastModified = time
+          cb(null, item)
+        })
+      } else {
+        urlCache(item.Key, (err, url) => {
+          if (err) return cb(err)
+          item.url = url
+          cb(null, item)
+        })
       }
     }
   }

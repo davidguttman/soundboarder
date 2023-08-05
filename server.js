@@ -1,11 +1,14 @@
 const path = require('path')
+const multer = require('multer')
 const express = require('express')
 const { EventEmitter } = require('events')
 
 const s3 = require('./s3')
 
 const PORT = process.env.PORT || 3000
+const SOUNDBOARD_S3_PREFIX = 'misc/soundboard/'
 
+const upload = multer({ storage: multer.memoryStorage() })
 const emitter = new EventEmitter()
 const app = express()
 
@@ -17,6 +20,7 @@ app.get('/send', handleSend)
 app.get('/receive', handleReceive)
 app.post('/play', handlePlay)
 app.get('/listen', handleListen)
+app.post('/upload', upload.single('file'), handleUpload)
 
 function handlePlay (req, res) {
   const sound = req.body.sound
@@ -56,7 +60,7 @@ function handleRequest (viewName, req, res) {
       .filter(file => file.Key.endsWith('.mp3'))
       .map(file => {
         return {
-          name: file.Key.replace('misc/soundboard/', '').replace('.mp3', ''),
+          name: file.Key.replace(SOUNDBOARD_S3_PREFIX, '').replace('.mp3', ''),
           url: file.url
         }
       })
@@ -66,6 +70,26 @@ function handleRequest (viewName, req, res) {
     const rows = Math.ceil(nSounds / columns)
 
     res.render(viewName, { sounds, columns, rows })
+  })
+}
+
+function handleUpload (req, res) {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded')
+  }
+
+  console.log(req.file)
+
+  const key = SOUNDBOARD_S3_PREFIX + req.file.originalname
+  console.log('Uploading file to S3:', key)
+
+  s3.put(req.file, key, err => {
+    if (err) {
+      console.log('Error uploading file:', err)
+      return res.status(500).send(err)
+    }
+
+    res.redirect('/send')
   })
 }
 

@@ -1,0 +1,19 @@
+<html lang="en">
+<head>
+  <title>Upload MP3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
+</head>
+<body>
+  <div class="pa4">
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <div class="measure">
+        <label for="file" class="f6 b db mb2">Select MP3 to upload:</label>
+        <input type="file" name="file" id="file" accept=".mp3" class="input-reset ba b--black-20 pa2 mb2 db w-100">
+        <input type="submit" value="Upload MP3" name="submit" class="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib">
+      </div>
+    </form>
+  </div>
+</body>
+</html>
+
