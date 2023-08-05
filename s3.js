@@ -1,7 +1,8 @@
 const knox = require('knox')
 const xtend = require('xtend')
 const through2 = require('through2')
-const AsyncCache = require('async-cache')
+
+const cache = require('./cache')
 const config = require('./config')
 
 module.exports = createClient(config.s3)
@@ -9,13 +10,8 @@ module.exports = createClient(config.s3)
 function createClient (config) {
   const client = knox.createClient(config)
 
-  const dirCache = new AsyncCache({
-    load: (dir, cb) => getDirTime(client, dir, cb)
-  })
-
-  const urlCache = new AsyncCache({
-    load: (file, cb) => getFileUrl(client, file, cb)
-  })
+  const dirCache = cache((dir, cb) => getDirTime(client, dir, cb))
+  const urlCache = cache((file, cb) => getFileUrl(client, file, cb))
 
   return {
     list: (dir, cb) => {
@@ -25,13 +21,13 @@ function createClient (config) {
 
       const tr = through2.obj((item, enc, cb) => {
         if (item.Prefix) {
-          dirCache.get(item.Prefix, (err, time) => {
+          dirCache(item.Prefix, (err, time) => {
             if (err) return cb(err)
             item.LastModified = time
             return cb(null, item)
           })
         } else {
-          urlCache.get(item.Key, (err, url) => {
+          urlCache(item.Key, (err, url) => {
             if (err) return cb(err)
             item.url = url
             cb(null, item)
@@ -113,4 +109,3 @@ function getDirTime (client, prefix, cb) {
     .on('error', cb)
     .on('end', () => {})
 }
-
