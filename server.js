@@ -4,6 +4,7 @@ const express = require('express')
 const { EventEmitter } = require('events')
 
 const s3 = require('./s3')
+const discord = require('./discord')
 
 const PORT = process.env.PORT || 3000
 const SOUNDBOARD_S3_PREFIX = 'misc/soundboard/'
@@ -11,6 +12,8 @@ const SOUNDBOARD_S3_PREFIX = 'misc/soundboard/'
 const upload = multer({ storage: multer.memoryStorage() })
 const emitter = new EventEmitter()
 const app = express()
+
+emitter.on('play', discord)
 
 app.set('view engine', 'ejs')
 app.use(express.json())

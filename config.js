@@ -9,5 +9,10 @@ module.exports = {
   },
   redis: {
     url: process.env.REDIS_URL
+  },
+  discord: {
+    token: process.env.DISCORD_BOT_TOKEN,
+    guild: process.env.DISCORD_GUILD,
+    channel: process.env.DISCORD_CHANNEL
   }
 }
