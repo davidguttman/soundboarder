@@ -7,8 +7,8 @@
 <body class="bg-black sans-serif">
   <div class="flex items-center justify-center vh-100">
     <div class="w-100 w-50-m w-25-l">
-      <input id="password" class="tc input-reset ba b--black-20 pa2 mb2 db w-100 br2 f3 bg-dark-gray white"
-        type="text" placeholder="Enter password" />
+      <div id="discordButton" class="tc input-reset ba b--black-20 pa2 mb2 db w-100 br2 f3 bg-dark-gray white pointer"
+        onclick="loginWithDiscord()">Login with Discord</div>
       <br />
       <div id="message" class="tc mt3 light-red"></div>
     </div>
@@ -17,20 +17,26 @@
   <script>
     var urlParams = new URLSearchParams(window.location.search);
     var message = urlParams.get('message');
-    var passwordCookiePresent = document.cookie.indexOf('password') > -1;
+    var discordToken = localStorage.getItem('discordToken');
 
     if (message) {
       document.getElementById('message').innerText = decodeURIComponent(message);
     }
 
-    document.getElementById('password').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        window.location.href = `/send?password=${this.value}`;
-      }
-    });
+    function loginWithDiscord() {
+      // Implement Discord OAuth2 flow here
+      const redirectUrl = encodeURIComponent(window.location.origin)
+      const discordUrl = `https://discord.com/api/oauth2/authorize?client_id=1062445025386041374&redirect_uri=${redirectUrl}&response_type=token&scope=identify%20guilds%20email`
+      window.open(discordUrl, '_self');
+    }
 
-    if (passwordCookiePresent && !message) {
-      window.location.href = '/send';
+    window.onload = function () {
+      const fragment = new URLSearchParams(window.location.hash.slice(1));
+      const [accessToken, tokenType] = [fragment.get('access_token'), fragment.get('token_type')];
+
+      if (accessToken && tokenType && !message) {
+        window.location.href = `/send?accessToken=${accessToken}&tokenType=${tokenType}`
+      }
     }
   </script>
 

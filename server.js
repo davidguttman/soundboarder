@@ -1,3 +1,4 @@
+require('isomorphic-fetch')
 const path = require('path')
 const multer = require('multer')
 const express = require('express')
@@ -100,14 +101,57 @@ function handleUpload (req, res) {
   })
 }
 
-function protect (req, res, next) {
-  const password = req.cookies.password || req.query.password
-  if (!password || password !== config.password) {
-    return res.redirect(`/index.html?message=${encodeURIComponent('Invalid password')}`)
+async function protect (req, res, next) {
+  const accessToken = req.query.accessToken || req.cookies.accessToken
+  const tokenType = req.query.tokenType || req.cookies.tokenType
+
+  if (!accessToken || !tokenType) {
+    return res.redirect(
+      `/?message=${encodeURIComponent('Missing access token')}`
+    )
   }
+
+  const { user, guilds } = await getUserInfo(accessToken, tokenType)
+  console.log(user, guilds)
+
+  if (!user || !guilds) {
+    return res.redirect(
+      `/?message=${encodeURIComponent('Invalid access token')}`
+    )
+  }
+
+  if (!guilds.find(guild => guild.id === config.discord.guild)) {
+    return res.redirect(
+      `/?message=${encodeURIComponent('Unauthorized')}`
+    )
+  }
+
+  res.cookie('accessToken', accessToken, { maxAge: 1000 * 60 * 60 * 24 * 7 })
+  res.cookie('tokenType', tokenType, { maxAge: 1000 * 60 * 60 * 24 * 7 })
+
   next()
 }
 
 app.listen(PORT, () => {
   console.log('App is listening on port ' + PORT)
 })
+
+async function getUserInfo (accessToken, tokenType) {
+  const urlUser = 'https://discord.com/api/users/@me'
+  const urlGuilds = 'https://discord.com/api/users/@me/guilds'
+
+  const opts = {
+    headers: {
+      authorization: `${tokenType} ${accessToken}`
+    }
+  }
+
+  const [user, guilds] = await Promise.all([
+    fetch(urlUser, opts).then(result => result.json()),
+    fetch(urlGuilds, opts).then(result => result.json())
+  ])
+
+  if (!user.id) return {}
+
+  return { user, guilds }
+}
