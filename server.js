@@ -39,23 +39,23 @@ function handlePlay (req, res) {
 }
 
 function handleSend (req, res) {
-  s3.list('misc/soundboard', (err, files) => {
+  const directory = SOUNDBOARD_S3_PREFIX + req.user.id + '/'
+  s3.list(directory, (err, files) => {
     if (err) return res.status(500).send(err)
 
+    console.log(files)
+
     const sounds = files
+      .filter(file => file.Key)
       .filter(file => file.Key.endsWith('.mp3'))
       .map(file => {
         return {
-          name: file.Key.replace(SOUNDBOARD_S3_PREFIX, '').replace('.mp3', ''),
+          name: file.Key.replace(directory, '').replace('.mp3', ''),
           url: file.url
         }
       })
 
-    const nSounds = sounds.length
-    const columns = 4
-    const rows = Math.ceil(nSounds / columns)
-
-    res.render('send.html.ejs', { sounds, columns, rows })
+    res.render('send.html.ejs', { sounds })
   })
 }
 
@@ -64,9 +64,11 @@ function handleUpload (req, res) {
     return res.status(400).send('No file uploaded')
   }
 
+  const directory = SOUNDBOARD_S3_PREFIX + req.user.id + '/'
+
   console.log(req.file)
 
-  const key = SOUNDBOARD_S3_PREFIX + req.file.originalname
+  const key = directory + req.file.originalname
   console.log('Uploading file to S3:', key)
 
   s3.put(req.file, key, err => {
@@ -109,6 +111,8 @@ async function protect (req, res, next) {
 
   res.cookie('accessToken', accessToken, { maxAge: 1000 * 60 * 60 * 24 * 7 })
   res.cookie('tokenType', tokenType, { maxAge: 1000 * 60 * 60 * 24 * 7 })
+
+  req.user = user
 
   next()
 }
