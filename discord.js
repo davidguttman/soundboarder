@@ -3,11 +3,14 @@ const {
   createAudioResource,
   joinVoiceChannel,
   VoiceConnectionStatus,
+  generateDependencyReport,
   createAudioPlayer
 } = require('@discordjs/voice')
 const { Client, Events, GatewayIntentBits } = require('discord.js')
 const hyperquest = require('hyperquest')
 const { EventEmitter } = require('events')
+
+console.log(generateDependencyReport())
 
 const emitter = new EventEmitter()
 
