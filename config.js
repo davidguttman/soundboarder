@@ -1,6 +1,7 @@
 require('dotenv').config()
 
 module.exports = {
+  password: process.env.PASSWORD,
   s3: {
     key: process.env.S3_KEY,
     secret: process.env.S3_SECRET,

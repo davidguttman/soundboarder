@@ -4,37 +4,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
 
-<style>
-  body, html {
-    height: 100%;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .grid {
-    width: 100vw;
-    height: 100vh;
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-  }
-  .grid button {
-    width: 100%;
-    height: 100%;
-  }
-</style>
-
 <body class="bg-black sans-serif">
-  <div class="grid tc" >
-    <a class="f3 link dim br4 ma1 dib white bg-dark-gray pointer inline-flex items-center justify-center" href="/receive">
-      Receive
-    </a>
-
-    <a class="f3 link dim br4 ma1 dib white bg-dark-gray pointer inline-flex items-center justify-center" href="/send">
-      Send
-    </a>
+  <div class="flex items-center justify-center vh-100">
+    <div class="w-100 w-50-m w-25-l">
+      <input id="password" class="tc input-reset ba b--black-20 pa2 mb2 db w-100 br2 f3 bg-dark-gray white"
+        type="text" placeholder="Enter password" />
+      <br />
+      <div id="message" class="tc mt3 light-red"></div>
+    </div>
   </div>
+
+  <script>
+    var urlParams = new URLSearchParams(window.location.search);
+    var message = urlParams.get('message');
+    var passwordCookiePresent = document.cookie.indexOf('password') > -1;
+
+    if (message) {
+      document.getElementById('message').innerText = decodeURIComponent(message);
+    }
+
+    document.getElementById('password').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        window.location.href = `/send?password=${this.value}`;
+      }
+    });
+
+    if (passwordCookiePresent && !message) {
+      window.location.href = '/send';
+    }
+  </script>
+
+
 </body>
 
 </html>

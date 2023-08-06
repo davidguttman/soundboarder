@@ -1,9 +1,11 @@
 const path = require('path')
 const multer = require('multer')
 const express = require('express')
+const cookieParser = require('cookie-parser')
 const { EventEmitter } = require('events')
 
 const s3 = require('./s3')
+const config = require('./config')
 const discord = require('./discord')
 
 const PORT = process.env.PORT || 3000
@@ -16,14 +18,15 @@ const app = express()
 emitter.on('play', discord)
 
 app.set('view engine', 'ejs')
+app.use(cookieParser())
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.get('/send', handleSend)
+app.get('/send', protect, handleSend)
 app.get('/receive', handleReceive)
-app.post('/play', handlePlay)
+app.post('/play', protect, handlePlay)
 app.get('/listen', handleListen)
-app.post('/upload', upload.single('file'), handleUpload)
+app.post('/upload', protect, upload.single('file'), handleUpload)
 
 function handlePlay (req, res) {
   const sound = req.body.sound
@@ -31,6 +34,7 @@ function handlePlay (req, res) {
   if (!sound) return res.status(400).send('Missing sound query parameter')
 
   emitter.emit('play', sound)
+  res.status(201).end()
 }
 
 function handleListen (req, res) {
@@ -94,6 +98,14 @@ function handleUpload (req, res) {
 
     res.redirect('/send')
   })
+}
+
+function protect (req, res, next) {
+  const password = req.cookies.password || req.query.password
+  if (!password || password !== config.password) {
+    return res.redirect(`/index.html?message=${encodeURIComponent('Invalid password')}`)
+  }
+  next()
 }
 
 app.listen(PORT, () => {
