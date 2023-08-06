@@ -23,12 +23,14 @@
     <% }) %>
   </div>
   <div class="white-50 pa4 mt4">
-    <div class="b--white-20 pa4 w-100 h5 ba flex items-center justify-center">
+    <div class="b--white-20 pa2 w-100 h5 ba flex items-center justify-center">
       <form action="/upload" method="post" enctype="multipart/form-data">
         <div class="measure">
-          <label for="file" class="f6 b db mb2">Select MP3 to upload:</label>
-          <input type="file" name="file" id="file" accept=".mp3" class="input-reset ba b--black-20 pa2 mb2 db w-100">
-          <input type="submit" value="Upload MP3" name="submit" class="b ph3 pv2 input-reset ba br4 bg-dark-gray white grow pointer f6 dib">
+          <label id="upload" class="ma0 b ph3 pv2 input-reset ba br4 bg-dark-gray hover-bg-light-gray white hover-black pointer f6 b--white-50">
+            <span id="file-selected">Upload MP3</span>
+            <input type="file" name="file" id="file" accept=".mp3" class="dn" onchange="fileChange()">
+          </label>
+          <input type="submit" value="Upload" name="submit" id="fileSubmit" class="ma0 dn b ph3 pv2 input-reset ba br4 hover-bg-white hover-black bg-black white pointer f6 b--white-50">
         </div>
       </form>
     </div>
@@ -44,6 +46,14 @@
         },
         body: JSON.stringify({sound: sound})
       });
+    }
+
+    function fileChange () {
+      const file = document.getElementById('file').files[0];
+      document.getElementById('file-selected').innerText = file.name;
+      document.getElementById('fileSubmit').classList.remove('dn');
+      document.getElementById('fileSubmit').value = `Upload ${file.name}`;
+      document.getElementById('upload').classList.add('dn');
     }
 
   </script>
