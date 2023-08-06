@@ -24,10 +24,10 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.get('/send', protect, handleSend)
-app.get('/receive', handleReceive)
 app.post('/play', protect, handlePlay)
-app.get('/listen', handleListen)
 app.post('/upload', protect, upload.single('file'), handleUpload)
+// app.get('/receive', handleReceive)
+// app.get('/listen', handleListen)
 
 function handlePlay (req, res) {
   const sound = req.body.sound
@@ -38,29 +38,7 @@ function handlePlay (req, res) {
   res.status(201).end()
 }
 
-function handleListen (req, res) {
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    Connection: 'keep-alive'
-  })
-
-  const onPlay = sound => res.write(`data: ${JSON.stringify(sound)}\n\n`)
-  emitter.on('play', onPlay)
-
-  res.on('close', function () {
-    emitter.off('play', onPlay)
-  })
-}
-
 function handleSend (req, res) {
-  handleRequest('send.html.ejs', req, res)
-}
-
-function handleReceive (req, res) {
-  handleRequest('receive.html.ejs', req, res)
-}
-
-function handleRequest (viewName, req, res) {
   s3.list('misc/soundboard', (err, files) => {
     if (err) return res.status(500).send(err)
 
@@ -77,7 +55,7 @@ function handleRequest (viewName, req, res) {
     const columns = 4
     const rows = Math.ceil(nSounds / columns)
 
-    res.render(viewName, { sounds, columns, rows })
+    res.render('send.html.ejs', { sounds, columns, rows })
   })
 }
 
@@ -112,7 +90,7 @@ async function protect (req, res, next) {
   }
 
   const { user, guilds } = await getUserInfo(accessToken, tokenType)
-  console.log(user, guilds)
+  console.log(user)
 
   if (!user || !guilds) {
     return res.redirect(
@@ -120,7 +98,10 @@ async function protect (req, res, next) {
     )
   }
 
-  if (!guilds.find(guild => guild.id === config.discord.guild)) {
+  const targetGuild = guilds.find(guild => guild.id === config.discord.guild)
+  console.log(targetGuild)
+
+  if (!targetGuild) {
     return res.redirect(
       `/?message=${encodeURIComponent('Unauthorized')}`
     )
