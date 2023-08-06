@@ -22,16 +22,12 @@ function play (url) {
   emitter.emit('play', url)
 }
 
-// Create a new client instance
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates]
 })
 
-// When the client is ready, run this code (only once)
-// We use 'c' for the event parameter to keep it separate from the already defined 'client'
 client.once(Events.ClientReady, onReady)
 
-// Log in to Discord with your client's token
 client.login(config.token)
 
 function onReady (c) {
@@ -45,15 +41,9 @@ function onReady (c) {
   })
 
   const audioPlayer = createAudioPlayer()
-  const subscription = connection.subscribe(audioPlayer)
+  connection.subscribe(audioPlayer)
   connection.on(VoiceConnectionStatus.Ready, () => {
     console.log('Voice connection ready')
-    // const resource = createAudioResource(
-    //   hyperquest(
-    //     'https://dmg-share.s3.wasabisys.com/misc/soundboard/i%27m-the-party-pooper.mp3'
-    //   )
-    // )
-    // audioPlayer.play(resource)
 
     emitter.on('play', url => {
       const resource = createAudioResource(hyperquest(url))
